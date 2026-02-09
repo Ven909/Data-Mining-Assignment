@@ -65,3 +65,15 @@ late_struggle.rename(columns={'Label': 'Late_Success_Rate'}, inplace=True)
 eval_df = df_final.merge(late_struggle, on='SubjectID')
 late_corr = eval_df['Early_Success_Rate'].corr(eval_df['Late_Success_Rate'])
 print(f"\n How well does Early success correlate to Late success: {late_corr:.3f}")
+
+# Count the number of students in each quadrant
+quadrant_counts = df_final['Quadrant'].value_counts()
+quadrant_percentages = df_final['Quadrant'].value_counts(normalize=True) * 100
+
+print("--- Student Distribution by Quadrant ---")
+for quadrant, count in quadrant_counts.items():
+    print(f"{quadrant}: {count} students ({quadrant_percentages[quadrant]:.1f}%)")
+
+# Optional: Print the average grade per quadrant to see the impact
+print("\n--- Average Final Grade per Quadrant ---")
+print(df_final.groupby('Quadrant')['X-Grade'].mean().sort_values(ascending=False))
