@@ -3,12 +3,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # 1. Load the data
-# Adjust paths as necessary based on your folder structure
 early = pd.read_csv('S19_All_Release_2_10_22/early.csv')
 subjects = pd.read_csv('S19_All_Release_2_10_22/Data/LinkTables/Subject.csv')
 
-# 2. Aggregate student performance from early problems
-# We want to see how they behaved on the first 30 problems
+# 2. Aggregate student performance from the early problems
 student_stats = early.groupby('SubjectID').agg(
     Avg_Attempts=('Attempts', 'mean'),
     Early_Success_Rate=('CorrectEventually', 'mean'),
@@ -18,8 +16,7 @@ student_stats = early.groupby('SubjectID').agg(
 # 3. Merge with final grades
 df_final = student_stats.merge(subjects[['SubjectID', 'X-Grade']], on='SubjectID')
 
-# 4. Define the Success Quadrant Categories
-# Using medians to split the groups fairly
+# 4. Define the success quadrants
 med_attempts = df_final['Avg_Attempts'].median()
 med_grade = df_final['X-Grade'].median()
 
@@ -34,7 +31,7 @@ df_final['Quadrant'] = df_final.apply(categorize, axis=1)
 # 5. Visualizations
 plt.figure(figsize=(12, 8))
 
-# Scatter plot: Attempts vs Final Grade
+# Scatter plot
 sns.scatterplot(
     data=df_final, 
     x='Avg_Attempts', 
@@ -45,27 +42,26 @@ sns.scatterplot(
     palette='viridis'
 )
 
-# Add quadrant dividers
+# Add thj quadrant dividers
 plt.axvline(med_attempts, color='grey', linestyle='--', alpha=0.5)
 plt.axhline(med_grade, color='grey', linestyle='--', alpha=0.5)
 
-plt.title('Success Quadrant: Early Persistence vs. Final Grade')
+plt.title('How does Early Persistence affect Final Grade')
 plt.xlabel('Average Attempts (Early Problems)')
 plt.ylabel('Final Exam Grade (X-Grade)')
 plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tight_layout()
-plt.savefig('success_quadrant.png')
+plt.savefig('Data-Mining/task2-artifacts/success_quadrant.png')
 
 # 6. Correlation Summary
 print("--- Correlation Analysis ---")
 print(df_final[['Avg_Attempts', 'Early_Success_Rate', 'Total_Struggles', 'X-Grade']].corr()['X-Grade'])
 
-# 7. Predictive Evaluation
-# Let's see if struggling in early problems (Label=False) correlates with late problems
+# 7. Let's see if struggling in the early problems (Label=False) correlates with later problems
 late = pd.read_csv('S19_All_Release_2_10_22/late.csv')
 late_struggle = late.groupby('SubjectID')['Label'].mean().reset_index()
 late_struggle.rename(columns={'Label': 'Late_Success_Rate'}, inplace=True)
 
 eval_df = df_final.merge(late_struggle, on='SubjectID')
 late_corr = eval_df['Early_Success_Rate'].corr(eval_df['Late_Success_Rate'])
-print(f"\nPredictive Power: Early success correlation to Late success: {late_corr:.3f}")
+print(f"\n How well does Early success correlate to Late success: {late_corr:.3f}")
